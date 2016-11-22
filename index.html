@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="keywords" content="sdd,microservices,slideshow,presentation" />
+    <meta name="description" content="Spec driven development in Microservices by Nikita Galkin" />
+    <title>Использовании TypeScript для Node.js приложений</title>
+
+    <style>
+        @import url(//fonts.googleapis.com/css?family=PT+Sans&subset=latin,latin-ext);
+        @import url(//fonts.googleapis.com/css?family=PT+Sans&subset=latin,latin-ext);
+        @import url(//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+        body {
+            font-family: 'PT Sans';
+        }
+        h1, h2, h3 {
+            font-family: 'PT Sans';
+            font-weight: 400;
+            margin-bottom: 0;
+        }
+        .remark-slide-content h1 { font-size: 3em; }
+        .remark-slide-content h2 { font-size: 2em; }
+        .remark-slide-content h3 { font-size: 1.6em; }
+        .footnote {
+            position: absolute;
+            bottom: 3em;
+        }
+        li p { line-height: 1.25em; }
+        .red { color: #fa0000; }
+        .large { font-size: 2em; }
+        a, a > code {
+            color: rgb(249, 38, 114);
+            text-decoration: none;
+        }
+        code {
+            background: #e7e8e2;
+            border-radius: 5px;
+        }
+        .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+        .remark-code-line-highlighted     { background-color: #373832; }
+        .pull-left {
+            float: left;
+            width: 47%;
+        }
+        .pull-right {
+            float: right;
+            width: 47%;
+        }
+        .pull-right ~ p {
+            clear: both;
+        }
+        #slideshow .slide .content code {
+            font-size: 0.8em;
+        }
+        #slideshow .slide .content pre code {
+            font-size: 0.9em;
+            padding: 15px;
+        }
+        .inverse {
+            background: #272822;
+            color: #777872;
+            text-shadow: 0 0 20px #333;
+        }
+        .inverse h1, .inverse h2 {
+            color: #f3f3f3;
+            line-height: 0.8em;
+        }
+
+        /* Slide-specific styling */
+        #slide-inverse .footnote {
+            bottom: 12px;
+            left: 20px;
+        }
+        #slide-how .slides {
+            font-size: 0.9em;
+            position: absolute;
+            top:  151px;
+            right: 140px;
+        }
+        #slide-how .slides h3 {
+            margin-top: 0.2em;
+        }
+        #slide-how .slides .first, #slide-how .slides .second {
+            padding: 1px 20px;
+            height: 90px;
+            width: 120px;
+            -moz-box-shadow: 0 0 10px #777;
+            -webkit-box-shadow: 0 0 10px #777;
+            box-shadow: 0 0 10px #777;
+        }
+        #slide-how .slides .first {
+            background: #fff;
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            z-index: 1;
+        }
+        #slide-how .slides .second {
+            position: relative;
+            background: #fff;
+            z-index: 0;
+        }
+
+        /* Two-column layout */
+        .left-column {
+            color: #777;
+            width: 20%;
+            height: 92%;
+            float: left;
+        }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+            color: #000;
+        }
+        .right-column {
+            width: 75%;
+            float: right;
+            padding-top: 1em;
+        }
+    </style>
+</head>
+<body>
+<textarea id="source">
+layout: true
+class: center, middle, cover
+---
+#Использовании TypeScript для Node.js приложений
+##Nikita Galkin
+---
+layout: false
+.left-column[
+<img width="100%" src="//avatars0.githubusercontent.com/u/5930544?v=3&s=460">
+  ## Никита Галкин
+]
+.right-column[
+
+# Backend разработчик
+## Люблю Highload, Opensource и Хакатоны
+## Умею делить монолиты на микросервисы
+## на PHP и Node.js
+## в компания <img src="http://s.developers.org.ua/img/announces/cik.png" height="28"> Ciklum (ThomasCook)
+<hr/>
+## <svg aria-hidden="true" class="octicon octicon-mark-github" height="28" version="1.1" viewBox="0 0 16 16" width="28"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59 0.4 0.07 0.55-0.17 0.55-0.38 0-0.19-0.01-0.82-0.01-1.49-2.01 0.37-2.53-0.49-2.69-0.94-0.09-0.23-0.48-0.94-0.82-1.13-0.28-0.15-0.68-0.52-0.01-0.53 0.63-0.01 1.08 0.58 1.23 0.82 0.72 1.21 1.87 0.87 2.33 0.66 0.07-0.52 0.28-0.87 0.51-1.07-1.78-0.2-3.64-0.89-3.64-3.95 0-0.87 0.31-1.59 0.82-2.15-0.08-0.2-0.36-1.02 0.08-2.12 0 0 0.67-0.21 2.2 0.82 0.64-0.18 1.32-0.27 2-0.27 0.68 0 1.36 0.09 2 0.27 1.53-1.04 2.2-0.82 2.2-0.82 0.44 1.1 0.16 1.92 0.08 2.12 0.51 0.56 0.82 1.27 0.82 2.15 0 3.07-1.87 3.75-3.65 3.95 0.29 0.25 0.54 0.73 0.54 1.48 0 1.07-0.01 1.93-0.01 2.2 0 0.21 0.15 0.46 0.55 0.38C13.71 14.53 16 11.53 16 8 16 3.58 12.42 0 8 0z"></path></svg> [galk-in](//github.com/galk-in/) <img src="//www.npmjs.com/static/images/npm-logo.svg" height="28" alt="npm logo"> [galkin](//www.npmjs.com/~galkin) <img src="//upload.wikimedia.org/wikipedia/en/thumb/9/9f/Twitter_bird_logo_2012.svg/1259px-Twitter_bird_logo_2012.svg.png" height="28"> [galk_in](//twitter.com/galk_in) <img src="http://www.hoeghautoliners.com/_public/theme-hoegh/img/svg/logo-linkedin.svg" height="28"> [nikitagalkin](//ua.linkedin.com/in/nikitagalkin)
+
+]
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+  # Внедрение инструмента возможно
+  # только внутри процесса,
+  # который его использует.
+---
+layout: false
+
+# Процессы при разработке на JS
+
+  ## - Написания кода
+  ## - Документирование кода
+  ## - Транспайлинг
+  ## - Линтинг
+  ## - Написание и запуск тестов
+---
+# Процессы при разработке на JS
+
+  ## - Написание и совместное использование спецификации
+  ## - Написание определений для библиотек
+  ## - Фиксирование версий библиотек
+  ## - Запуск Node.js
+  ## - Переход на TypeScript?
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Написание кода
+---
+layout: false
+.left-column[
+  <img width="100%" src="//ozon-st.cdn.ngenix.net/multimedia/1010251781.jpg">
+]
+
+.right-column[
+## Книги:
+  #### <a href="https://basarat.gitbooks.io/typescript/content/docs/getting-started.html">Getting Started With TypeScript by Basarat</a>
+  #### <a href="https://www.ng-book.com/2/">ng-book 2</a>
+## Документация:
+  #### <a href="https://www.typescriptlang.org/docs/tutorial.html">Официальная документация</a>
+  #### <a href="https://github.com/Microsoft/TypeScript/wiki/Roadmap">Roadmap</a>
+## Онлайн инструменты:
+  #### <a href="http://www.typescriptlang.org/play/">Песочница</a>
+  #### <a href="http://codepen.io/">Codepen</a>
+  ]
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Документирование кода
+---
+layout: false
+```js
+/**
+ * Represents a book.
+ * @constructor
+ * @param {string} title - The title of the book.
+ * @param {string} author - The author of the book.
+ */
+function Book(title, author) {
+  ...
+}
+```
+
+```js
+type GenderType = "boy" | "girl";
+
+interface User {
+    id: number;
+    name: string;
+    gender?: GenderType;
+}
+
+function buildUser(userId: number, userName: string): User {
+    return { id: userId, name: userName };
+}
+
+class UserFactory {
+  static createUser(id: number): User;
+  static createUser(id: number, name: string): User;
+  static createUser(id, name?): User {
+    if(name) {
+      return {id: id, name: name};
+    } else {
+      return UserFactory:findUser(id);
+    }
+  }
+  ...
+}
+```
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Транспайлинг
+---
+layout: false
+## tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "noImplicitAny": false,
+    "sourceMap": false
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
+```
+## package.json
+```json
+  ...
+  "scripts": {
+    "build": "tsc",
+    "cs": "tslint --project tsconfig.json -t stylish",
+    "coveralls": "tsc --sourceMap && NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "test": "npm run cs && npm run build && npm run test:unit && npm run test:functional && npm run test:integration",
+    "test:functional": "NODE_ENV=test mocha ./test/functional/",
+    "test:integration": "NODE_ENV=test mocha ./test/integration/",
+    "test:unit": "NODE_ENV=test mocha ./test/unit/"
+  },
+  ...
+```
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Линтинг
+---
+layout: false
+
+```json
+{
+  "rules": {
+    "member-access": false,
+    "no-any": false,
+    "no-var-requires": false,
+    "typedef": [
+      true,
+      "call-signature",
+      "arrow-call-signature",
+      "parameter"
+    ],
+
+    "adjacent-overload-signatures": true,
+    "member-ordering": [
+      true,
+      {
+        "order": "fields-first"
+      }
+    ],
+    "only-arrow-functions": false,
+    "no-internal-module": true,
+    "class-name": true,
+    "comment-format": [
+      true
+    ],
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "no-console": [
+      true,
+      "debug",
+      "error",
+      "info",
+      "log",
+      "time",
+      "timeEnd",
+      "trace"
+    ],
+    "no-duplicate-variable": true,
+    "no-eval": true,
+    "no-internal-module": true,
+    "no-trailing-whitespace": true,
+    "no-unsafe-finally": true,
+    "no-var-keyword": true,
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "quotemark": [
+      true,
+      "double"
+    ],
+    "semicolon": [
+      true,
+      "always"
+    ],
+    "triple-equals": [
+      true,
+      "allow-null-check"
+    ],
+    "typedef-whitespace": [
+      true,
+      {
+        "call-signature": "nospace",
+        "index-signature": "nospace",
+        "parameter": "nospace",
+        "property-declaration": "nospace",
+        "variable-declaration": "nospace"
+      }
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords"
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type"
+    ]
+  }
+}
+```
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Написание и запуск тестов
+---
+layout: false
+
+# Транспайлинг тестов
+# или
+# Использовани компайлера
+# `mocha test.ts --compilers ts:typescript-require`
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Написание и совместное использование спецификации
+---
+layout: false
+
+## Input:
+```json
+{
+  "title": "Example Schema",
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "age": {
+      "description": "Age in years",
+      "type": "integer",
+      "minimum": 0
+    },
+    "hairColor": {
+      "enum": ["black", "brown", "blue"],
+      "type": "string"
+    }
+  },
+  "required": ["firstName", "lastName"]
+}
+```
+---
+## Output:
+```ts
+export interface ExampleSchema {
+  firstName: string;
+  lastName: string;
+  /**
+   * Age in years
+   */
+  age?: number;
+  hairColor?: "black" | "brown" | "blue";
+}
+```
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Написание определений для библиотек d.ts
+---
+layout: false
+```
+{
+  "name": "msb",
+  "version": "0.11.6",
+  "description": "A framework to simplify the implementation of an event-bus oriented microservices architecture",
+  "license": "MIT",
+  "main": "index.js",
+  "typings": "msb.d.ts",
+...
+```
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Фиксирование версий библиотек
+## Использовать shrinkwrap
+## Yarn не корректно работает с scoped packages @types
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Запуск Node.js
+---
+layout: false
+
+# ts-node
+
+## Execute TypeScript files with node
+## Interactive REPL
+## Execute (and print) TypeScript through the CLI
+## Uses source maps
+## Loads compiler options and `.d.ts` files from `tsconfig.json`
+
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+name: inverse
+layout: true
+class: center, middle, inverse
+---
+# Переход на TypeScript
+# <a href="https://gist.github.com/galk-in/f170212cd0cfbb63323d39044e0f2b03">Пошаговое руководство</a>
+---
+# Вопросы?
+
+## Twitter galk.in
+## Email nikita@galk.in
+## Face2face at BeerJS
+</textarea>
+<script src="//remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>
+    var hljs = remark.highlighter.engine;
+</script>
+<script>
+    var slideshow = remark.create({
+        ratio: '16:9',
+        highlightStyle: 'monokai',
+        highlightLanguage: 'javascript',
+        highlightLines: true,
+        countIncrementalSlides: false
+    }) ;
+</script>
+</body>
+</html>
+
